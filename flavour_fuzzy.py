@@ -1,59 +1,55 @@
-import numpy as np
-import skfuzzy as fuzz
-from skfuzzy import control as ctrl
-
-class SistemaGorjetaFuzzy:
+class SistemaGorjetaFuzzySimples:
     def __init__(self):
-        """ Definição das variáveis fuzzy (qualidade da refeição, serviço, tempo de atendimento e gorjeta)"""
-        self.qualidade_refeicao = ctrl.Antecedent(np.arange(0, 11, 1), 'qualidade_refeicao')
-        self.servico = ctrl.Antecedent(np.arange(0, 11, 1), 'servico')
-        self.tempo_atendimento = ctrl.Antecedent(np.arange(0, 11, 1), 'tempo_atendimento')
-        self.gorjeta = ctrl.Consequent(np.arange(0, 26, 1), 'gorjeta')
+        pass
 
-        self._definir_funcoes_pertinencia()
-        self._definir_regras()
+    def fuzzificar_qualidade_refeicao(self, qualidade):
+        """Fuzzifica a qualidade da refeição."""
+        if qualidade <= 5:
+            return "insosso"
+        else:
+            return "saboroso"
 
-    def _definir_funcoes_pertinencia(self):
-        """Define as funções de pertinência para todas as variáveis fuzzy."""
-        self.qualidade_refeicao['insosso'] = fuzz.trimf(self.qualidade_refeicao.universe, [0, 0, 5])
-        self.qualidade_refeicao['saboroso'] = fuzz.trimf(self.qualidade_refeicao.universe, [5, 10, 10])
+    def fuzzificar_servico(self, servico):
+        """Fuzzifica o serviço."""
+        if servico <= 5:
+            return "ruim"
+        else:
+            return "excelente"
 
-        self.servico['ruim'] = fuzz.trimf(self.servico.universe, [0, 0, 5])
-        self.servico['excelente'] = fuzz.trimf(self.servico.universe, [5, 10, 10])
+    def fuzzificar_tempo_atendimento(self, tempo):
+        """Fuzzifica o tempo de atendimento."""
+        if tempo <= 5:
+            return "demorado"
+        else:
+            return "rapido"
 
-        self.tempo_atendimento['demorado'] = fuzz.trimf(self.tempo_atendimento.universe, [0, 0, 5])
-        self.tempo_atendimento['rapido'] = fuzz.trimf(self.tempo_atendimento.universe, [5, 10, 10])
+    def inferir_gorjeta(self, qualidade_fuzzy, servico_fuzzy, tempo_fuzzy):
+        """Realiza a inferência fuzzy e decide a gorjeta."""
+        if tempo_fuzzy == "demorado":
+            return 0 
+        elif qualidade_fuzzy == "insosso" and servico_fuzzy == "ruim":
+            return 5  
+        elif qualidade_fuzzy == "saboroso" and servico_fuzzy == "excelente":
+            return 20  
+        else:
+            return 10 
 
-        self.gorjeta['pouca'] = fuzz.trimf(self.gorjeta.universe, [0, 0, 13])
-        self.gorjeta['generosa'] = fuzz.trimf(self.gorjeta.universe, [13, 25, 25])
+    def calcular_gorjeta(self, qualidade, servico, tempo):
+        """Calcula a gorjeta com base nos valores fuzzificados."""
+        qualidade_fuzzy = self.fuzzificar_qualidade_refeicao(qualidade)
+        servico_fuzzy = self.fuzzificar_servico(servico)
+        tempo_fuzzy = self.fuzzificar_tempo_atendimento(tempo)
 
-    def _definir_regras(self):
-        """Define as regras fuzzy baseadas nas funções de pertinência."""
-        regra1 = ctrl.Rule(self.qualidade_refeicao['insosso'] & self.servico['ruim'], self.gorjeta['pouca'])
-        regra2 = ctrl.Rule(self.qualidade_refeicao['saboroso'] & self.servico['excelente'], self.gorjeta['generosa'])
-        regra3 = ctrl.Rule(self.tempo_atendimento['demorado'], self.gorjeta['pouca'])
-        regra4 = ctrl.Rule(self.tempo_atendimento['rapido'], self.gorjeta['generosa'])
-
-        self.sistema_controle = ctrl.ControlSystem([regra1, regra2, regra3, regra4])
-        self.simulador = ctrl.ControlSystemSimulation(self.sistema_controle)
-
-    def calcular_gorjeta(self, qualidade_refeicao, servico, tempo_atendimento):
-        """Calcula a gorjeta com base nos valores de entrada fornecidos."""
-        self.simulador.input['qualidade_refeicao'] = qualidade_refeicao
-        self.simulador.input['servico'] = servico
-        self.simulador.input['tempo_atendimento'] = tempo_atendimento
-
-        self.simulador.compute()
-
-        return self.simulador.output['gorjeta']
+        gorjeta = self.inferir_gorjeta(qualidade_fuzzy, servico_fuzzy, tempo_fuzzy)
+        return gorjeta
 
 if __name__ == "__main__":
-    sistema_gorjeta = SistemaGorjetaFuzzy()
+    sistema_gorjeta = SistemaGorjetaFuzzySimples()
 
-    qualidade_refeicao = 8  
+    qualidade_refeicao = 8 
     servico = 9  
-    tempo_atendimento = 6 
+    tempo_atendimento = 6  
 
     gorjeta_sugerida = sistema_gorjeta.calcular_gorjeta(qualidade_refeicao, servico, tempo_atendimento)
 
-    print(f"Gorjeta sugerida: {gorjeta_sugerida:.2f}%")
+    print(f"Gorjeta sugerida: {gorjeta_sugerida}%")
