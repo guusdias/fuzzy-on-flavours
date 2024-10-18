@@ -50,9 +50,9 @@ class SistemaGorjetaFuzzy:
 if __name__ == "__main__":
     sistema_gorjeta = SistemaGorjetaFuzzy()
 
-    qualidade_refeicao = 8  # Refeição saborosa
-    servico = 9  # Serviço excelente
-    tempo_atendimento = 6  # Tempo de atendimento rápido
+    qualidade_refeicao = 8 
+    servico = 9
+    tempo_atendimento = 6
 
    
     gorjeta_sugerida = sistema_gorjeta.calcular_gorjeta(qualidade_refeicao, servico, tempo_atendimento)
